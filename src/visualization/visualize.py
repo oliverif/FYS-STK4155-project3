@@ -176,8 +176,9 @@ def plot_train_test_mse_r2(mse_train, mse_test, r2_train,r2_test,params,param_la
     plots = [(MSE_dict,MSE_labels),(R2_dict,R2_labels)]
     return plot_plots(plots,params)
 
-def plot_confusion_matrix(z,p,ax=None,title=None,labels=['Malignant','Benign']):
-    conf_mat = confusion_matrix(z,p)
+def plot_confusion_matrix(z=None,p=None,conf_mat = None,ax=None,title=None,labels=None):
+    if (conf_mat is None):
+        conf_mat = confusion_matrix(z,p)
     if (ax is None):
         ax = plt.gca()   
     ax = sns.heatmap(conf_mat, 

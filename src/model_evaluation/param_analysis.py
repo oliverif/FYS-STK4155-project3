@@ -2,11 +2,12 @@ from numpy import zeros
 from sklearn.model_selection import GridSearchCV
 import pandas as pd
 from .resampling import cross_val_score
+from .metrics import METRIC_FUNC
 import timeit
 
 
 
-def evaluate_parameter(model, params, metrics, X, z,X_scaler,z_scaler):
+def evaluate_parameter(model, params, metrics, X, z,X_scaler=None,z_scaler=None):
     '''
     Fits a model using for every 
     'param' value in 'vals'.
@@ -33,11 +34,15 @@ def evaluate_parameter(model, params, metrics, X, z,X_scaler,z_scaler):
         dictionary with train and test scores. The scores has length
         
     '''
+    X = X.to_numpy()
+    z = z.to_numpy()
     param_name = list(params.keys())[0]
 
     #Number of parameters to test
-    num_vals = params[param_name].shape[0]
-
+    if(len(params[param_name].shape)>1):
+        num_vals = params[param_name].shape[0]
+    else:
+        num_vals = 1
     #Arrays to store scores
     score_dict = {}
     score_dict= dict((metric,{'train':[],'test':[]}) for metric in metrics)
@@ -45,14 +50,14 @@ def evaluate_parameter(model, params, metrics, X, z,X_scaler,z_scaler):
     score_dict['train_time'] = []
 
 
-
+    print("change here")
     #Fit with every val and store metrics
     for i in range(num_vals):
         #Use dict with param_name as key and element i from
         #vals as value to set model parameter.
         model.set_params(**{param_name:params[param_name][i]})
         start = timeit.default_timer()
-        scores = cross_val_score(model, X, z,5,X_scaler,z_scaler,metrics)
+        scores = cross_val_score(model, X, z,4,X_scaler,z_scaler,metrics)
         stop = timeit.default_timer()
         for metric in metrics:
             score_dict[metric]['train'].append(scores['train'][metric])
@@ -62,7 +67,7 @@ def evaluate_parameter(model, params, metrics, X, z,X_scaler,z_scaler):
     return score_dict
 
     
-def grid_search_df(X, z, model, param_grid):
+def grid_search_df(X, z, model, param_grid,scoring):
     '''
     Performs a grid search for best model
     performance across param_grid. 
@@ -102,7 +107,7 @@ def grid_search_df(X, z, model, param_grid):
     gs = GridSearchCV(estimator = model, 
                       cv=5,
                       param_grid = param_grid,
-                      n_jobs=1)
+                      n_jobs=-1,scoring=scoring)
     #Fit the model
     gs = gs.fit(X,z)
     #Create list of parameters as presented in the GridSearchCV
