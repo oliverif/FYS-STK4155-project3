@@ -1,5 +1,5 @@
 from numpy import zeros
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 import pandas as pd
 from .resampling import cross_val_score
 from .metrics import METRIC_FUNC
@@ -39,10 +39,11 @@ def evaluate_parameter(model, params, metrics, X, z,X_scaler=None,z_scaler=None)
     param_name = list(params.keys())[0]
 
     #Number of parameters to test
-    if(len(params[param_name].shape)>1):
+    if(len(params[param_name])>1):
         num_vals = params[param_name].shape[0]
     else:
         num_vals = 1
+
     #Arrays to store scores
     score_dict = {}
     score_dict= dict((metric,{'train':[],'test':[]}) for metric in metrics)
@@ -50,7 +51,6 @@ def evaluate_parameter(model, params, metrics, X, z,X_scaler=None,z_scaler=None)
     score_dict['train_time'] = []
 
 
-    print("change here")
     #Fit with every val and store metrics
     for i in range(num_vals):
         #Use dict with param_name as key and element i from
@@ -103,9 +103,10 @@ def grid_search_df(X, z, model, param_grid,scoring):
     df: pandas.DataFrame
         Dataframe containing the results of the gridsearch.
     '''
+    cvs = StratifiedKFold(shuffle=True,n_splits=4)
     #Gridsearch object
     gs = GridSearchCV(estimator = model, 
-                      cv=5,
+                      cv=cvs,
                       param_grid = param_grid,
                       n_jobs=-1,scoring=scoring)
     #Fit the model
