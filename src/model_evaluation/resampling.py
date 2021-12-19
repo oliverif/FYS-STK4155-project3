@@ -58,16 +58,20 @@ def bias_var_analysis(model, X_train,X_test, z_train,z_test,comp_param,n_bootstr
     
     var: numpy array shape(n_params,n_classes), variance for each class
     '''
-    #Converting to numpy
-    X_train = X_train.to_numpy()
-    X_test = X_test.to_numpy()
-    z_train = z_train.to_numpy()
-    z_test = z_test.to_numpy()
-    
+    try:
+        #Converting to numpy
+        z_test = z_test.to_numpy()
+        z_train = z_train.to_numpy()
+        X_train = X_train.to_numpy()
+        X_test = X_test.to_numpy()
+        
+        
+    except:
+        pass   
     #Must binarize test set as model output is binarized.
     #and they need to be same shape.
     enc = LabelBinarizer().fit(z_train.reshape(-1,1))
-    z_test = enc.transform(z_test)
+    z_test = enc.transform(z_test.reshape(-1,1))
     
     
     if (len(comp_param)>1):

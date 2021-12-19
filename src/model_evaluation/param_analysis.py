@@ -34,8 +34,12 @@ def evaluate_parameter(model, params, metrics, X, z,X_scaler=None,z_scaler=None)
         dictionary with train and test scores. The scores has length
         
     '''
-    X = X.to_numpy()
-    z = z.to_numpy()
+    try:
+        X = X.to_numpy()
+        z = z.to_numpy()
+    except:
+        pass
+
     param_name = list(params.keys())[0]
 
     #Number of parameters to test
